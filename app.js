@@ -22,7 +22,7 @@ const products = [
         category: "Electronics"
     },
     {
-        name: "USB-C Charging Cable",
+        name: "USB-C Charger",
         price: 12.99,
         inStock: true,
         category: "Accessories"
