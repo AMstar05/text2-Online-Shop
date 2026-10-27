@@ -1,92 +1,82 @@
-const productName = "Wireless Headphones";
-const price = 49.99;
-let inStock = true;
-const category = "Electronics";
+import { products } from "./products.js";
+import { addToCart, getCartCount } from "./cart.js";
 
-console.log("Product Name:", productName);
-console.log("Price:", price);
-console.log("In Stock:", inStock);
-console.log("Category:", category);
-// Store the available products in an array.
-const products = [
-    {
-        name: productName,
-        price: price,
-        inStock: inStock,
-        category: category
-    },
-    {
-        name: "Bluetooth Speaker",
-        price: 34.99,
-        inStock: true,
-        category: "Electronics"
-    },
-    {
-        name: "USB-C Charger",
-        price: 12.99,
-        inStock: true,
-        category: "Accessories"
+
+// Render the current cart count in the navigation.
+function updateCartCount() {
+    const cartCount = document.getElementById("cart-count");
+    if (cartCount) {
+        cartCount.textContent = String(getCartCount());
     }
-];
+}
 
-// Display product cards on the page.
-function renderProducts(products) {
+
+// Show product information and wire up each Add to Cart button.
+function renderProducts(productList) {
     const productGrid = document.getElementById("product-grid");
+    const errorMessage = document.getElementById("error-message");
 
-    // Make sure the product grid exists before displaying products.
-    if (!productGrid) {
-        console.error("The product-grid container was not found.");
-        return;
-    }
 
-    // Clear the previous product cards before rendering new ones.
+    if (!productGrid || !errorMessage) return;
+
+
     productGrid.innerHTML = "";
 
-    // Create a card for each product in the array.
-    products.forEach((product) => {
-        const productCard = document.createElement("div");
-        productCard.classList.add("product-card");
+
+    productList.forEach((product) => {
+        const productCard = document.createElement("article");
+        productCard.className = "product-card";
+
 
         const nameHeading = document.createElement("h3");
-        nameHeading.textContent = product.name;
+        nameHeading.textContent = product.productName;
+
 
         const categoryText = document.createElement("p");
         categoryText.textContent = `Category: ${product.category}`;
 
+
         const priceText = document.createElement("p");
         priceText.textContent = `Price: $${product.price.toFixed(2)}`;
 
+
         const stockText = document.createElement("p");
-        stockText.textContent = product.inStock
-            ? "In Stock"
-            : "Out of Stock";
+        stockText.textContent = product.inStock ? "In Stock" : "Out of Stock";
 
-        // Create the Add to Cart button.
+
         const addButton = document.createElement("button");
-        addButton.textContent = "Add to Cart";
         addButton.type = "button";
-
-        // Prevent customers from adding unavailable products.
+        addButton.textContent = "Add to Cart";
         addButton.disabled = !product.inStock;
 
-        // Add the selected product to the shopping cart.
+
         addButton.addEventListener("click", () => {
-            addToCart(product.name);
+            try {
+                // addToCart throws an error if the product is missing or unavailable.
+                addToCart(product.productName);
+                errorMessage.textContent = `${product.productName} was added to your cart.`;
+                errorMessage.classList.remove("error");
+                errorMessage.classList.add("success");
+                updateCartCount();
+            } catch (error) {
+                // Show helpful feedback in the page instead of using alert or console.log.
+                errorMessage.textContent = error.message || "Sorry, we couldn't add that item. Please try again.";
+                errorMessage.classList.remove("success");
+                errorMessage.classList.add("error");
+            } finally {
+                // Ensure the button is available again after the attempt.
+                addButton.disabled = !product.inStock;
+            }
         });
 
-        // Assemble the product card.
-        productCard.appendChild(nameHeading);
-        productCard.appendChild(categoryText);
-        productCard.appendChild(priceText);
-        productCard.appendChild(stockText);
-        productCard.appendChild(addButton);
 
-        // Add the completed card to the product grid.
+        productCard.append(nameHeading, categoryText, priceText, stockText, addButton);
         productGrid.appendChild(productCard);
     });
 }
 
-// Render the products when the page has finished loading.
+
 document.addEventListener("DOMContentLoaded", () => {
     renderProducts(products);
+    updateCartCount();
 });
